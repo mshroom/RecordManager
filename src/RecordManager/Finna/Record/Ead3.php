@@ -230,6 +230,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
         $data['format_ext_str_mv'] = $data['format'];
 
         $data['topic_uri_str_mv'] = $this->getTopicURIs();
+        $data['geographic_uri_str_mv'] = $this->getGeographicTopicURIs();
 
         return $data;
     }
@@ -519,6 +520,19 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
     protected function getTopicURIs()
     {
         return $this->getTopicsHelper('subject', 'aihe', true);
+    }
+
+    /**
+     * Get geographic topics URIs
+     *
+     * @return array
+     */
+    protected function getGeographicTopicURIs()
+    {
+        return array_merge(
+            $this->getTopicsHelper('geogname', 'aihe', true),
+            $this->getTopicsHelper('geogname', 'alueellinen kattavuus', true)
+        );
     }
 
     /**
