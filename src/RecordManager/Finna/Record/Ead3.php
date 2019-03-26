@@ -587,7 +587,10 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      */
     protected function getGeographicTopics()
     {
-        return $this->getTopicsHelper('geogname', 'aihe');
+        return array_merge(
+            $this->getTopicsHelper('geogname', 'aihe'),
+            $this->getTopicsHelper('geogname', 'alueellinen kattavuus')
+        );
     }
     
     /**
