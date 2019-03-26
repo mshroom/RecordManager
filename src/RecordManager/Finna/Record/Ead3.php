@@ -518,21 +518,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      */
     protected function getTopicURIs()
     {
-        $result = [];
-        if (!isset($this->doc->controlaccess->subject)) {
-            return $result;
-        }
-        foreach ($this->doc->controlaccess->subject as $subject) {
-            $attr = $subject->attributes();
-            if (isset($attr->relator)
-                && (string)$attr->relator === 'aihe'
-                && isset($attr->identifier)
-                && ('' !== ($id = trim((string)$attr->identifier)))
-            ) {
-                $result[] = $id;
-            }
-        }
-        return array_unique($result);
+        return $this->getTopicsHelper('subject', 'aihe', true);
     }
 
     /**
@@ -591,23 +577,19 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      */
     protected function getTopics()
     {
-        $result = [];
-        if (!isset($this->doc->controlaccess->subject)) {
-            return $result;
-        }
-        foreach ($this->doc->controlaccess->subject as $subject) {
-            $attr = $subject->attributes();
-            if (isset($attr->relator)
-                && (string)$attr->relator === 'aihe'
-                && isset($subject->part)
-                && ('' !== ($subject = trim((string)$subject->part)))
-            ) {
-                $result[] = $subject;
-            }
-        }
-        return $result;
+        return $this->getTopicsHelper('subject', 'aihe');
     }
 
+    /**
+     * Get geographic topics
+     *
+     * @return array
+     */
+    protected function getGeographicTopics()
+    {
+        return $this->getTopicsHelper('geogname', 'aihe');
+    }
+    
     /**
      * Get institution
      *
