@@ -236,6 +236,9 @@ class Forward extends Base
         ];
 
         $data['author'] = $primaryAuthors['names'];
+        $data['author_id_str_mv']
+            = $this->addNamespaceToAuthRecord($primaryAuthors['ids']);
+
         // Support for author_variant is currently not implemented
         $data['author_role'] = $primaryAuthors['relators'];
         if (isset($primaryAuthors['names'][0])) {
@@ -247,8 +250,14 @@ class Forward extends Base
         // Support for author2_variant is currently not implemented
         $data['author2_role'] = $secondaryAuthors['relators'];
 
+        $allAuthors = $this->getAuthorsByRelator();
+        $data['author2_id_str_mv']
+            = $this->addNamespaceToAuthRecord($allAuthors['ids']);
+
         $corporateAuthors = $this->getCorporateAuthors();
         $data['author_corporate'] = $corporateAuthors['names'];
+        $data['author_corporate_id_str_mv']
+            = $this->addNamespaceToAuthRecord($corporateAuthors['ids']);
         $data['author_corporate_role'] = $corporateAuthors['relators'];
 
         $data['geographic'] = $data['geographic_facet']
@@ -316,12 +325,12 @@ class Forward extends Base
      * @return array Array keyed by 'names' for author names, 'ids' for author ids
      * and 'relators' for relator codes
      */
-    protected function getAuthorsByRelator($relators)
+    protected function getAuthorsByRelator($relators = [])
     {
         $result = ['names' => [], 'ids' => [], 'relators' => []];
         foreach ($this->getMainElement()->HasAgent as $agent) {
             $relator = $this->getRelator($agent);
-            if (!in_array($relator, $relators)) {
+            if (!empty($relators) && !in_array($relator, $relators)) {
                 continue;
             }
             $result['names'][] = (string)$agent->AgentName;
@@ -345,7 +354,7 @@ class Forward extends Base
      */
     protected function getRelator($agent)
     {
-        return $MetadataUtils::normalizeRelator((string)$agent->Activity);
+        return MetadataUtils::normalizeRelator((string)$agent->Activity);
     }
 
     /**

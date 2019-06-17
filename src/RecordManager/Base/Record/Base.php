@@ -479,4 +479,24 @@ class Base
         }
         return '';
     }
+
+    /**
+     * Prepend authority ID with namespace.
+     *
+     * @param string[] $ids Array of authoroty ids
+     *
+     * @return string[]
+     */
+    protected function addNamespaceToAuthRecord($ids)
+    {
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+        return array_map(
+            function ($id) {
+                return $this->source . ".$id";
+            },
+            $ids
+        );
+    }
 }
