@@ -232,12 +232,12 @@ class Forward extends \RecordManager\Base\Record\Forward
      * @return array Array keyed by 'names' for author names, 'ids' for author ids
      * and 'relators' for relator codes
      */
-    protected function getAuthorsByRelator($relators)
+    protected function getAuthorsByRelator($relators = [])
     {
         $result = ['names' => [], 'ids' => [], 'relators' => []];
         foreach ($this->getMainElement()->HasAgent as $agent) {
             $relator = $this->getRelator($agent);
-            if (!in_array($relator, $relators)) {
+            if (!empty($relators) && !in_array($relator, $relators)) {
                 continue;
             }
             $name = (string)$agent->AgentName;
