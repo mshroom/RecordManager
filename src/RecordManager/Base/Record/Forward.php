@@ -221,11 +221,11 @@ class Forward extends Base
         foreach ($unsortedPrimaryAuthors['relators'] as $i => $relator) {
             if ('d02' === $relator) {
                 $directors['names'][] = $unsortedPrimaryAuthors['names'][$i];
-                $directors['ids'][] = $unsortedPrimaryAuthors['ids'][$i];
+                $directors['ids'][] = $unsortedPrimaryAuthors['ids'][$i] ?? null;
                 $directors['relators'][] = $unsortedPrimaryAuthors['relators'][$i];
             } else {
                 $others['names'][] = $unsortedPrimaryAuthors['names'][$i];
-                $others['ids'][] = $unsortedPrimaryAuthors['ids'][$i];
+                $others['ids'][] = $unsortedPrimaryAuthors['ids'][$i] ?? null;
                 $others['relators'][] = $unsortedPrimaryAuthors['relators'][$i];
             }
         }
