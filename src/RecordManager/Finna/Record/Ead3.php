@@ -47,6 +47,8 @@ use RecordManager\Base\Utils\MetadataUtils;
  */
 class Ead3 extends \RecordManager\Base\Record\Ead3
 {
+    use SolrAuth;
+
     /**
      * Archive fonds format
      *
@@ -168,9 +170,11 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                     $material[] = (string) $physdesc;
                 }
             }
+            // TODO: should this be in 'physical' field?
             $data['material'] = $material;
         }
 
+        // TODO: userestrict is not under doc->did. Which one should go to 'rights'?
         if (isset($doc->did->userestrict->p)) {
             $data['rights'] = (string)$doc->did->userestrict->p;
         } elseif (isset($doc->did->accessrestrict->p)) {
@@ -182,12 +186,36 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             $data['usage_rights_str_mv'] = $rights;
         }
 
+        // Authors and author ids
         if (isset($doc->controlaccess->name)) {
             $data['author'] = [];
             $data['author_role'] = [];
             $data['author_variant'] = [];
             $data['author_facet'] = [];
+            $data['author2_id_str_mv'] = [];
             foreach ($doc->controlaccess->name as $name) {
+                $attr = $name->attributes();
+                $authorId = $name->attributes()->identifier ?? false;
+                $data['author2_id_str_mv'][] = $authorId;
+
+                $localtype = (string)$name->attributes()->localtype;
+                switch ($localtype) {
+                case '':
+                case 'http://www.rdaregistry.info/Elements/u/P60672':
+                case 'http://www.rdaregistry.info/Elements/u/P60434':
+                case 'Tekijä':
+                    $role = 'aut';
+                    break;
+                case 'http://www.rdaregistry.info/Elements/u/P60429':
+                    $role = 'pht';
+                    break;
+                default:
+                    $role = '';
+                }
+                if ('' === $role) {
+                    continue;
+                }
+
                 foreach ($name->part as $part) {
                     $role = null;
                     if (isset($name->attributes()->relator)) {
@@ -204,6 +232,12 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                         ) {
                             $data['author_facet'][] = (string)$part;
                         }
+                        if ($authorId) {
+                            $data['author_id_str_mv'][]
+                                = $this->getAuthorityIdWithNamespace(
+                                    (string)$authorId
+                                );
+                        }
                         break;
                     case 'Varianttinimi':
                     case 'Vaihtoehtoinen nimi':
@@ -214,6 +248,8 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                     }
                 }
             }
+            $data['author2_id_str_mv'] = array_diff($data['author2_id_str_mv'], ($data['author_id_strda_mv'] ?? []));
+            $data['author2_id_str_mv'] = $this->addNamespaceToAuthRecord($data['author2_id_str_mv']);
         }
 
         if (isset($doc->index->index->indexentry)) {
@@ -224,8 +260,11 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             }
         }
 
-        $data['author_id_str_mv'] = $this->getAuthorIds();
-        $data['author_corporate_id_str_mv'] = $this->getCorporateAuthorIds();
+        $data['author_corporate_id_str_mv'] = array_map(
+            function ($id) {
+                return $this->getAuthorityIdWithNamespace($id);
+            }, $this->getCorporateAuthorIds()
+        );
 
         $data['format_ext_str_mv'] = $data['format'];
 
@@ -262,82 +301,6 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             }
         }
         return '';
-    }
-
-    /**
-     * Get authors
-     *
-     * @return array
-     */
-    protected function getAuthors()
-    {
-        $result = [];
-        if (!isset($this->doc->relations->relation)) {
-            return $result;
-        }
-
-        foreach ($this->doc->relations->relation as $relation) {
-            $type = (string)$relation->attributes()->relationtype;
-            if ('cpfrelation' !== $type) {
-                continue;
-            }
-            $role = (string)$relation->attributes()->arcrole;
-            switch ($role) {
-            case '':
-            case 'http://www.rdaregistry.info/Elements/u/P60672':
-            case 'http://www.rdaregistry.info/Elements/u/P60434':
-                $role = 'aut';
-                break;
-            case 'http://www.rdaregistry.info/Elements/u/P60429':
-                $role = 'pht';
-                break;
-            default:
-                $role = '';
-            }
-            if ('' === $role) {
-                continue;
-            }
-            $result[] = trim((string)$relation->relationentry);
-        }
-        return $result;
-    }
-
-    /**
-     * Get author identifiers
-     *
-     * @return array
-     */
-    protected function getAuthorIds()
-    {
-        $result = [];
-        if (!isset($this->doc->relations->relation)) {
-            return $result;
-        }
-
-        foreach ($this->doc->relations->relation as $relation) {
-            $type = (string)$relation->attributes()->relationtype;
-            if ('cpfrelation' !== $type) {
-                continue;
-            }
-            $role = (string)$relation->attributes()->arcrole;
-            switch ($role) {
-            case '':
-            case 'http://www.rdaregistry.info/Elements/u/P60672':
-            case 'http://www.rdaregistry.info/Elements/u/P60434':
-                $role = 'aut';
-                break;
-            case 'http://www.rdaregistry.info/Elements/u/P60429':
-                $role = 'pht';
-                break;
-            default:
-                $role = '';
-            }
-            if ('' === $role) {
-                continue;
-            }
-            $result[] = (string)$relation->attributes()->href;
-        }
-        return $result;
     }
 
     /**

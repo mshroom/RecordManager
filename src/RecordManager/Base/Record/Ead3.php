@@ -238,6 +238,7 @@ class Ead3 extends Ead
     protected function getCorporateAuthors()
     {
         $result = [];
+        // TODO: is this needed?
         if (isset($this->doc->did->controlaccess->corpname)) {
             foreach ($this->doc->did->controlaccess->corpname as $corpname) {
                 $result[] = trim((string)$corpname);
@@ -314,7 +315,7 @@ class Ead3 extends Ead
                     $topic = (string)$node->part;
                 } else if (isset($attr->identifier)) {
                     $topic = (string)$attr->identifier;
-                }            
+                }
                 if ('' !== ($topic = trim($topic))) {
                     $result[] = $topic;
                 }
@@ -365,7 +366,7 @@ class Ead3 extends Ead
     protected function getPhysicalExtent()
     {
         $result = [];
-        if (!isset($this->doc->did->physdesc->extent)) {
+        if (!isset($this->doc->did->physdesc)) {
             return $result;
         }
         foreach ($this->doc->did->physdesc->extent as $extent) {
