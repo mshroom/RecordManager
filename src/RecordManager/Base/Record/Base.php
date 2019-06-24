@@ -494,7 +494,8 @@ class Base
         }
         return array_map(
             function ($id) {
-                return $this->source . ".$id";
+                $namespaces = $this->dataSourceSettings[$this->source]['authority'];
+                return ($namespaces['*'] ?? $this->source) . ".$id";
             },
             $ids
         );
