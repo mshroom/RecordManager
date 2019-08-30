@@ -48,7 +48,8 @@ class CreatePreview extends AbstractBase
      * @param string $basePath Base directory
      * @param array  $config   Main configuration
      * @param bool   $console  Specify whether RecordManager is executed on the
-     * console so that log output is also output to the console.
+     *                         console so that log output is also output to the
+     *                         console
      * @param bool   $verbose  Whether verbose output is enabled
      */
     public function __construct($basePath, $config, $console = false,
@@ -101,7 +102,7 @@ class CreatePreview extends AbstractBase
         }
 
         if ($settings['preTransformation']) {
-            $metadata = $this->pretransform($metadata);
+            $metadata = $this->pretransform($metadata, $source);
         }
 
         $timestamp = $this->db->getTimestamp();
@@ -145,5 +146,29 @@ class CreatePreview extends AbstractBase
         );
 
         return $preview->create($record);
+    }
+
+    /**
+     * Get a list of valid data sources
+     *
+     * @param string $format Optional limit to specific format
+     *
+     * @return array
+     */
+    public function getDataSources($format = '')
+    {
+        $result = [];
+        foreach ($this->dataSourceSettings as $id => $config) {
+            if ($format && $config['format'] !== $format) {
+                continue;
+            }
+            $result[] = [
+                'id' => $id,
+                'format' => $config['format'] ?? '',
+                'institution' => $config['institution']
+            ];
+        }
+
+        return $result;
     }
 }

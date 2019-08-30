@@ -121,7 +121,7 @@ class Forward extends Base
      *
      * @param string $source Source ID
      * @param string $oaiID  Record ID received from OAI-PMH (or empty string for
-     * file import)
+     *                       file import)
      * @param string $data   Metadata
      *
      * @return void
@@ -130,7 +130,7 @@ class Forward extends Base
     {
         parent::setData($source, $oaiID, $data);
 
-        $this->doc = simplexml_load_string($data);
+        $this->doc = $this->parseXMLRecord($data);
     }
 
     /**
@@ -143,7 +143,7 @@ class Forward extends Base
         $doc = $this->getMainElement();
         $id = (string)$doc->Identifier;
         $attributes = $doc->Identifier->attributes();
-        if ($attributes->IDTypeName) {
+        if (!empty($attributes->IDTypeName)) {
             $id = (string)$attributes->IDTypeName . '_' . $id;
         }
         return $id;
