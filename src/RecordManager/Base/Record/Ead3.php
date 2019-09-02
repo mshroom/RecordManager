@@ -294,7 +294,7 @@ class Ead3 extends Ead
      *
      * @return array
      */
-    protected function getTopics()
+    public function getTopics()
     {
         $result = [];
         if (!isset($this->doc->did->controlaccess->subject)) {
