@@ -127,10 +127,15 @@ class Forward extends \RecordManager\Base\Record\Forward
             }
         }
 
-        $data['author_facet'] = array_merge(
-            isset($data['author']) ? (array)$data['author'] : [],
-            isset($data['author2']) ? (array)$data['author2'] : [],
-            isset($data['author_corporate']) ? (array)$data['author_corporate'] : []
+        $allAuthors = $this->getAuthorsByRelator();
+        $data['author_facet'] = array_unique(
+            array_unique(
+                array_merge(
+                    $allAuthors['names'],
+                    isset($data['author_corporate'])
+                        ? (array)$data['author_corporate'] : []
+                )
+            )
         );
 
         $data['format_ext_str_mv'] = (array)$data['format'];
@@ -234,7 +239,7 @@ class Forward extends \RecordManager\Base\Record\Forward
      */
     protected function getAuthorsByRelator($relators = [])
     {
-        $result = ['names' => [], 'ids' => [], 'relators' => []];
+        $result = ['names' => [], 'ids' => [], 'relators' => [], 'idrelators' => []];
         foreach ($this->getMainElement()->HasAgent as $agent) {
             $relator = $this->getRelator($agent);
             if (!empty($relators) && !in_array($relator, $relators)) {
@@ -253,6 +258,7 @@ class Forward extends \RecordManager\Base\Record\Forward
                 . (string)$agent->AgentIdentifier->IDValue;
             if ($id != ':') {
                 $result['ids'][] = $id;
+                $result['idrelators'][] = "$id###$relator";
             }
             $result['relators'][] = $relator;
         }

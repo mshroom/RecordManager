@@ -216,28 +216,37 @@ class Forward extends Base
         $directors = $others = [
             'names' => [],
             'ids' => [],
-            'relators' => []
+            'relators' => [],
+            'idrelators' => []
         ];
         foreach ($unsortedPrimaryAuthors['relators'] as $i => $relator) {
             if ('d02' === $relator) {
                 $directors['names'][] = $unsortedPrimaryAuthors['names'][$i];
                 $directors['ids'][] = $unsortedPrimaryAuthors['ids'][$i] ?? null;
+                $directors['idrelators'][]
+                    = $unsortedPrimaryAuthors['idrelators'][$i] ?? null;
                 $directors['relators'][] = $unsortedPrimaryAuthors['relators'][$i];
             } else {
                 $others['names'][] = $unsortedPrimaryAuthors['names'][$i];
                 $others['ids'][] = $unsortedPrimaryAuthors['ids'][$i] ?? null;
+                $others['idrelators'][]
+                    = $unsortedPrimaryAuthors['idrelators'][$i] ?? null;
                 $others['relators'][] = $unsortedPrimaryAuthors['relators'][$i];
             }
         }
         $primaryAuthors = [
             'names' => array_merge($directors['names'], $others['names']),
             'ids' => array_merge($directors['ids'], $others['ids']),
-            'relators' => array_merge($directors['relators'], $others['relators'])
+            'relators' => array_merge($directors['relators'], $others['relators']),
+            'idrelators'
+                => array_merge($directors['idrelators'], $others['idrelators'])
         ];
 
         $data['author'] = $primaryAuthors['names'];
         $data['author_id_str_mv']
             = $this->addNamespaceToAuthRecord($primaryAuthors['ids']);
+        $data['author_id_role_str_mv']
+            = $this->addNamespaceToAuthRecord($primaryAuthors['idrelators']);
 
         // Support for author_variant is currently not implemented
         $data['author_role'] = $primaryAuthors['relators'];
@@ -253,6 +262,8 @@ class Forward extends Base
         $allAuthors = $this->getAuthorsByRelator();
         $data['author2_id_str_mv']
             = $this->addNamespaceToAuthRecord($allAuthors['ids']);
+        $data['author2_id_role_str_mv']
+            = $this->addNamespaceToAuthRecord($allAuthors['idrelators']);
 
         $corporateAuthors = $this->getCorporateAuthors();
         $data['author_corporate'] = $corporateAuthors['names'];
@@ -338,6 +349,7 @@ class Forward extends Base
                 . (string)$agent->AgentIdentifier->IDValue;
             if ($id != ':') {
                 $result['ids'][] = $id;
+                $result['ids'][] = "$id###$relator";
             }
             $result['relators'][] = $relator;
         }
