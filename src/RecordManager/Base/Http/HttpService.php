@@ -106,7 +106,7 @@ class HttpService
             if (!class_exists($handler)) {
                 throw new \Exception("HTTP handler class $handler not found");
             }
-            $config['handler'] = new HandlerStack(new $handler());
+            $config['handler'] = HandlerStack::create(new $handler());
         }
         $config['headers']['User-Agent'] ??= 'RecordManager';
 

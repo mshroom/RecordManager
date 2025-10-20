@@ -143,7 +143,7 @@ trait FullTextTrait
         $maxTries = $this->config['FullTextEnrichment']['max_tries'] ?? 90;
         $retryWait = $this->config['FullTextEnrichment']['retry_wait'] ?? 5;
         $httpOptions = [
-            'follow_redirects' => true,
+            'allow_redirects' => true,
         ];
 
         if ($maxCacheAge && null !== $this->db) {
